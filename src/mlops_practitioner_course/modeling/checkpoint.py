@@ -1,0 +1,51 @@
+"""Saving and loading trained models.
+
+A checkpoint stores the model's state_dict together with the Settings it was trained
+with, so the exact model architecture and preprocessing can be rebuilt at load time.
+This replaces the notebook's pickle.dump(model), which breaks when code moves and can
+execute arbitrary code on load.
+"""
+
+from __future__ import annotations
+
+import logging
+from pathlib import Path
+
+import torch
+
+from mlops_practitioner_course.config import Settings
+from mlops_practitioner_course.modeling.model import BertClassifier
+
+logger = logging.getLogger(__name__)
+
+CHECKPOINT_FILENAME = "model.pt"
+
+
+def save_checkpoint(model: BertClassifier, settings: Settings, path: str | Path) -> Path:
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    torch.save(
+        {
+            "state_dict": model.state_dict(),
+            "settings": settings.model_dump(mode="json"),
+        },
+        path,
+    )
+    logger.info("Saved checkpoint to %s", path)
+    return path
+
+
+def load_checkpoint(
+    path: str | Path, device: torch.device | str = "cpu"
+) -> tuple[BertClassifier, Settings]:
+    """Rebuild the model from a checkpoint and return it with its training Settings."""
+    # weights_only=True refuses to unpickle arbitrary objects.
+    checkpoint = torch.load(path, map_location=device, weights_only=True)
+    settings = Settings.model_validate(checkpoint["settings"])
+
+    # pretrained=False: the encoder weights come from the checkpoint, not the Hub.
+    model = BertClassifier.from_config(settings.model, pretrained=False)
+    model.load_state_dict(checkpoint["state_dict"])
+    model.to(device).eval()
+    logger.info("Loaded checkpoint from %s (%s)", path, settings.model.name)
+    return model, settings

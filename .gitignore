@@ -9,3 +9,6 @@ wheels/
 # Virtual environments
 .venv
 /data
+
+# Trained models and evaluation outputs (track with DVC, not git)
+/models
