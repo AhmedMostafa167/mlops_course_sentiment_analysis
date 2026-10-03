@@ -34,10 +34,6 @@ def setup_logging(level: str) -> None:
     logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
-def run_dir(settings: Settings) -> Path:
-    return settings.artifacts.output_dir / f"bert-{settings.model.version}"
-
-
 def evaluate_split(
     predictor: SentimentPredictor,
     loader: DataLoader,
@@ -60,7 +56,7 @@ def evaluate_split(
 def train(settings: Settings) -> None:
     set_seed(settings.seed)
     device = resolve_device(settings.training.device)
-    out_dir = run_dir(settings)
+    out_dir = settings.run_dir
 
     loader = ArabicTweetsLoader.from_settings(settings)
     train_split, val_split = loader.load_train_val()
@@ -120,7 +116,7 @@ def main() -> None:
     setup_logging(settings.logging.level)
     logger.info("Loaded config from %s", args.config)
 
-    checkpoint = getattr(args, "checkpoint", None) or run_dir(settings) / CHECKPOINT_FILENAME
+    checkpoint = getattr(args, "checkpoint", None) or settings.run_dir / CHECKPOINT_FILENAME
     if args.command == "train":
         train(settings)
     elif args.command == "evaluate":

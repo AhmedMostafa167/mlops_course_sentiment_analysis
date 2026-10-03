@@ -80,6 +80,11 @@ class Settings(BaseModel):
     artifacts: ArtifactsConfig = ArtifactsConfig()
     logging: LoggingConfig = LoggingConfig()
 
+    @property
+    def run_dir(self) -> Path:
+        """Where this run's checkpoint, metrics and plots are saved."""
+        return self.artifacts.output_dir / f"bert-{self.model.version}"
+
     @classmethod
     def from_yaml(cls, path: str | Path = DEFAULT_CONFIG_PATH) -> Settings:
         with open(path, encoding="utf-8") as f:
