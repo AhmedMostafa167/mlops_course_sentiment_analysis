@@ -55,4 +55,5 @@
     1. Write results as files (metrics JSON, ROC PNG). They can be compared between runs and tracked with DVC.
     1. Logs vs. output: progress goes to logging, while predict results go to stdout so other tools can read them.
 
+* Internal models saved should be added to dvc: `dvc add models/bert-mini` 
 * FastAPI run: within the code write the uvcorn run command, add the port number and the host link as env variables in a production environment. 
