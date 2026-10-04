@@ -1,0 +1,23 @@
+import bentoml
+import numpy as np
+from mlops_practitioner_course.config import Settings
+from mlops_practitioner_course.modeling.checkpoint import CHECKPOINT_FILENAME
+from mlops_practitioner_course.modeling.predict import SentimentPredictor
+
+@bentoml.service(resources={"cpu": "2"}, traffic={"timeout": 60})
+class ModelService:
+    def __init__(self) -> None:
+        self.settings = Settings.from_yaml()
+        self.model = SentimentPredictor.from_checkpoint(
+            self.settings.run_dir / CHECKPOINT_FILENAME, self.settings.training.device
+        )
+
+    @bentoml.api(batchable=True, max_batch_size=64, max_latency_ms=50)
+    def predict(self, texts: list[str]) -> list[float]:
+        # predict_proba expects a Sequence[str] and returns a NumPy array
+        probs = self.model.predict_proba(texts)
+        return probs.tolist()
+
+    @bentoml.api
+    def get_threshold(self) -> float:
+        return self.model.threshold
