@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 
 from mlops_practitioner_course.config import Settings
@@ -44,6 +45,17 @@ def test_rejects_invalid_val_size(val_size):
         ArabicTweetsLoader(val_size=val_size)
 
 
-def test_missing_file_mentions_dvc_pull(tmp_path):
-    with pytest.raises(FileNotFoundError, match="dvc pull"):
-        ArabicTweetsLoader(tmp_path).load_test()
+def test_missing_file_falls_back_to_s3(tmp_path, monkeypatch):
+    # Stub out the network read and record which sources were requested.
+    sources = []
+
+    def fake_read_csv(source, **kwargs):
+        sources.append(str(source))
+        return pd.DataFrame({"label": ["neg"], "text": ["remote tweet"]})
+
+    monkeypatch.setattr(pd, "read_csv", fake_read_csv)
+    test = ArabicTweetsLoader(tmp_path).load_test()
+
+    assert all(s.startswith(ArabicTweetsLoader.S3_BASE_URL) for s in sources)
+    assert test.texts == ["remote tweet", "remote tweet"]
+    assert test.labels == [0, 1]

@@ -70,6 +70,12 @@ class LoggingConfig(BaseModel):
     level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
 
 
+class MLflowConfig(BaseModel):
+    tracking_uri: str = "sqlite:///mlflow.db"
+    experiment_name: str = "arabic-sentiment-bert"
+    registered_model_name: str = "arabic_sentiment_champion"
+
+
 class Settings(BaseModel):
     seed: int = 2020
     data: DataConfig = DataConfig()
@@ -79,6 +85,7 @@ class Settings(BaseModel):
     evaluation: EvaluationConfig = EvaluationConfig()
     artifacts: ArtifactsConfig = ArtifactsConfig()
     logging: LoggingConfig = LoggingConfig()
+    mlflow: MLflowConfig = Field(default_factory=MLflowConfig)
 
     @property
     def run_dir(self) -> Path:  # pragma: no cover
