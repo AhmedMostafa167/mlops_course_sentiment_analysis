@@ -10,7 +10,12 @@ import json
 import logging
 from pathlib import Path
 
+import mlflow
+import torch
 from torch.utils.data import DataLoader
+
+if not torch.cuda.is_available():
+    torch.cuda.is_current_stream_capturing = lambda: False
 
 from mlops_practitioner_course.config import DEFAULT_CONFIG_PATH, Settings
 from mlops_practitioner_course.data import ArabicTweetsLoader
@@ -29,6 +34,7 @@ def setup_logging(level: str) -> None:
         level=level,
         format="%(asctime)s %(levelname)-8s %(name)s: %(message)s",
         datefmt="%H:%M:%S",
+        force=True,
     )
     # Hugging Face Hub logs every HTTP request at INFO.
     logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -68,7 +74,8 @@ def train(settings: Settings) -> None:
     test_loader = preprocessor.build_dataloader(test_split.texts, test_split.labels)
 
     model = BertClassifier.from_config(settings.model)
-    history = Trainer(model, settings.training, device).fit(train_loader, val_loader)
+    trainer = Trainer(model, settings.training, device, settings=settings)
+    history = trainer.fit(train_loader, val_loader)
 
     save_checkpoint(model, settings, out_dir / CHECKPOINT_FILENAME)
     (out_dir / "history.json").write_text(
@@ -78,6 +85,20 @@ def train(settings: Settings) -> None:
     predictor = SentimentPredictor(model, preprocessor, device, settings.evaluation.threshold)
     evaluate_split(predictor, val_loader, val_split.labels, "val", out_dir)
     evaluate_split(predictor, test_loader, test_split.labels, "test", out_dir)
+
+    if getattr(trainer, "run_id", None):
+        with mlflow.start_run(run_id=trainer.run_id):
+            for artifact_name in [
+                "metrics_val.json",
+                "roc_val.png",
+                "metrics_test.json",
+                "roc_test.png",
+                CHECKPOINT_FILENAME,
+                "history.json",
+            ]:
+                artifact_path = out_dir / artifact_name
+                if artifact_path.exists():
+                    mlflow.log_artifact(str(artifact_path))
 
 
 def evaluate(settings: Settings, checkpoint: Path) -> None:

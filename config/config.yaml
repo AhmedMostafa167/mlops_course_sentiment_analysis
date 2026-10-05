@@ -32,3 +32,8 @@ artifacts:
 
 logging:
   level: INFO
+
+mlflow:
+  tracking_uri: "sqlite:///mlflow.db"
+  experiment_name: "arabic-sentiment-bert"
+  registered_model_name: "arabic_sentiment_champion"

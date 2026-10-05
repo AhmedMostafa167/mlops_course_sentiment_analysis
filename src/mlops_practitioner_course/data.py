@@ -7,7 +7,7 @@ import logging
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Tuple
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -45,6 +45,7 @@ class ArabicTweetsLoader:
 
     FILE_TEMPLATE = "{split}_Arabic_tweets_{sentiment}_20190413.tsv"
     LABELS = {"negative": 0, "positive": 1}
+    S3_BASE_URL = "https://sentiment-analysis-amr-data.s3.eu-north-1.amazonaws.com"
 
     def __init__(
         self,
@@ -67,20 +68,42 @@ class ArabicTweetsLoader:
         )
 
     def _read_file(self, split: Split, sentiment: str) -> pd.DataFrame:
-        path = self.data_dir / self.FILE_TEMPLATE.format(split=split, sentiment=sentiment)
-        if not path.exists():
-            raise FileNotFoundError(f"Missing data file: {path} (did you run `dvc pull`?)")
-        logger.debug("Reading %s", path)
+        filename = self.FILE_TEMPLATE.format(split=split, sentiment=sentiment)
+        local_path = self.data_dir / filename
+        if local_path.exists():
+            logger.info("Loading %s locally from %s", filename, local_path)
+            df = pd.read_csv(
+                local_path,
+                sep="\t",
+                header=None,
+                names=["label", "text"],
+                quoting=csv.QUOTE_NONE,
+            )
+        else:
+            s3_url = f"{self.S3_BASE_URL}/{filename}"
+            logger.info("Local file %s not found. Streaming in-memory from %s", local_path, s3_url)
+            df = pd.read_csv(
+                s3_url,
+                sep="\t",
+                header=None,
+                names=["label", "text"],
+                quoting=csv.QUOTE_NONE,
+            )
 
-        df = pd.read_csv(
-            path,
-            sep="\t",
-            header=None,
-            names=["label", "tweet"],
-            quoting=csv.QUOTE_NONE,
-        )
         df["label"] = self.LABELS[sentiment]
+        if "tweet" not in df.columns:
+            df["tweet"] = df["text"]
         return df
+
+    def load_raw_data(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        """Load raw train and test DataFrames, either from local disk or streamed from S3.
+
+        Returns:
+            Tuple[pd.DataFrame, pd.DataFrame]: (train_df, test_df)
+        """
+        train_df = self.load_split("train")
+        test_df = self.load_split("test")
+        return train_df, test_df
 
     def load_split(self, split: Split) -> pd.DataFrame:
         """Return all tweets of one split as a DataFrame with `tweet` and `label` columns."""
