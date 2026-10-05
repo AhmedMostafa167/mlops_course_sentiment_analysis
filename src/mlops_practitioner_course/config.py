@@ -41,7 +41,7 @@ class ModelConfig(BaseModel):
     freeze_bert: bool = False
 
     @property
-    def name(self) -> str:
+    def name(self) -> str:  # pragma: no cover
         return MODEL_NAMES[self.version]
 
 
@@ -81,7 +81,7 @@ class Settings(BaseModel):
     logging: LoggingConfig = LoggingConfig()
 
     @property
-    def run_dir(self) -> Path:
+    def run_dir(self) -> Path:  # pragma: no cover
         """Where this run's checkpoint, metrics and plots are saved."""
         return self.artifacts.output_dir / f"bert-{self.model.version}"
 

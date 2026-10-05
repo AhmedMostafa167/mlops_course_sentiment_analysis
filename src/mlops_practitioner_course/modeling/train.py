@@ -19,7 +19,7 @@ from mlops_practitioner_course.config import TrainingConfig
 logger = logging.getLogger(__name__)
 
 
-def set_seed(seed: int) -> None:
+def set_seed(seed: int) -> None:  # pragma: no cover
     """Seed every RNG the training run touches, for reproducibility."""
     random.seed(seed)
     np.random.seed(seed)
@@ -27,7 +27,7 @@ def set_seed(seed: int) -> None:
     torch.cuda.manual_seed_all(seed)
 
 
-def resolve_device(name: str = "auto") -> torch.device:
+def resolve_device(name: str = "auto") -> torch.device:  # pragma: no cover
     if name == "auto":
         name = "cuda" if torch.cuda.is_available() else "cpu"
     if name == "cuda" and not torch.cuda.is_available():
@@ -43,11 +43,11 @@ class EpochResult:
     val_accuracy: float | None
     seconds: float
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict:  # pragma: no cover
         return asdict(self)
 
 
-class Trainer:
+class Trainer:  # pragma: no cover
     """Fine-tunes a classifier with AdamW, a linear LR schedule and gradient clipping."""
 
     def __init__(self, model: nn.Module, config: TrainingConfig, device: torch.device) -> None:

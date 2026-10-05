@@ -126,4 +126,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    # App entry point
     main()

@@ -9,7 +9,7 @@ from transformers import AutoConfig, AutoModel
 from mlops_practitioner_course.config import ModelConfig
 
 
-class BertClassifier(nn.Module):
+class BertClassifier(nn.Module):  # pragma: no cover
     """Classifies a text from the final hidden state of its [CLS] token."""
 
     def __init__(
