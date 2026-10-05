@@ -35,7 +35,7 @@ class Prediction(BaseModel):
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:  # pragma: no cover
     # Load the model once at startup, not on every request.
     settings = Settings.from_yaml()
     app.state.settings = settings
@@ -68,7 +68,7 @@ def predict_texts(predictor: SentimentPredictor, texts: Sequence[str]) -> list[P
 
 
 @app.get("/")
-def root(request: Request) -> dict[str, str | float]:
+def root(request: Request) -> dict[str, str | float]:  # pragma: no cover
     settings: Settings = request.app.state.settings
     return {
         "service": app.title,

@@ -15,7 +15,7 @@ from mlops_practitioner_course.modeling.train import resolve_device
 from mlops_practitioner_course.preprocess import BertPreprocessor
 
 
-class SentimentPredictor:
+class SentimentPredictor:  # pragma: no cover
     """Turns raw tweets into positive-class probabilities and sentiment labels."""
 
     LABEL_NAMES = ("negative", "positive")

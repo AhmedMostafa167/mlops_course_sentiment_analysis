@@ -39,5 +39,22 @@ torch = { index = "pytorch" }
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "ipykernel>=7.4.0",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+]
+
+[tool.pytest.ini_options]
+addopts = "--cov=mlops_practitioner_course --cov-report=term-missing"
+
+[tool.coverage.run]
+# CLI entry point: orchestration only, its parts are tested (or excluded) individually.
+omit = ["*/mlops_practitioner_course/main.py"]
+
+[tool.coverage.report]
+fail_under = 70
+exclude_also = [
+    # Excludes every line between "# no cover: start" and "# no cover: stop".
+    "# no cover: start(?s:.)*?# no cover: stop",
 ]

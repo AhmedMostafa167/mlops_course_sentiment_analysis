@@ -56,6 +56,7 @@ class BertPreprocessor:
     ) -> None:
         if version not in MODEL_NAMES:
             raise ValueError(f"Unknown version {version!r}, expected one of {list(MODEL_NAMES)}")
+        # no cover: start (downloads the tokenizer from the Hugging Face Hub)
         self.model_name = MODEL_NAMES[version]
         self.max_length = max_length
         self.batch_size = batch_size
@@ -64,9 +65,10 @@ class BertPreprocessor:
         # Load once; loading per sentence is the main cost of the notebook version.
         logger.info("Loading tokenizer %s (max_length=%d)", self.model_name, max_length)
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        # no cover: stop
 
     @classmethod
-    def from_settings(cls, settings: Settings) -> BertPreprocessor:
+    def from_settings(cls, settings: Settings) -> BertPreprocessor:  # pragma: no cover
         return cls(
             version=settings.model.version,
             max_length=settings.model.max_length,
@@ -75,7 +77,7 @@ class BertPreprocessor:
             cleaner=TweetCleaner(remove_emojis=settings.preprocessing.remove_emojis),
         )
 
-    def encode(self, texts: Sequence[str]) -> tuple[torch.Tensor, torch.Tensor]:
+    def encode(self, texts: Sequence[str]) -> tuple[torch.Tensor, torch.Tensor]:  # pragma: no cover
         """Return (input_ids, attention_mask) tensors of shape (n_texts, max_length)."""
         encoded = self.tokenizer(
             [self.cleaner(t) for t in texts],
@@ -88,7 +90,7 @@ class BertPreprocessor:
         )
         return encoded["input_ids"], encoded["attention_mask"]
 
-    def build_dataloader(
+    def build_dataloader(  # pragma: no cover
         self,
         texts: Sequence[str],
         labels: Sequence[int] | None = None,

@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 CHECKPOINT_FILENAME = "model.pt"
 
 
-def save_checkpoint(model: BertClassifier, settings: Settings, path: str | Path) -> Path:
+def save_checkpoint(model: BertClassifier, settings: Settings, path: str | Path) -> Path:  # pragma: no cover
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     torch.save(
@@ -35,7 +35,7 @@ def save_checkpoint(model: BertClassifier, settings: Settings, path: str | Path)
     return path
 
 
-def load_checkpoint(
+def load_checkpoint(  # pragma: no cover
     path: str | Path, device: torch.device | str = "cpu"
 ) -> tuple[BertClassifier, Settings]:
     """Rebuild the model from a checkpoint and return it with its training Settings."""
