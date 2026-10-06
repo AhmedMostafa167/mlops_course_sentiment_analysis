@@ -9,3 +9,5 @@ include:
 python:
   lock_packages: false
   requirements_txt: "./requirements.txt"
+  extra_index_url:
+    - "https://download.pytorch.org/whl/cpu"
