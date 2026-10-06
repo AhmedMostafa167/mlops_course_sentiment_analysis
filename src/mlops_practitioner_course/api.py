@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field, StringConstraints
 
 from mlops_practitioner_course.config import Settings
 from mlops_practitioner_course.modeling.checkpoint import CHECKPOINT_FILENAME
-from mlops_practitioner_course.modeling.predict import SentimentPredictor
+from mlops_practitioner_course.modeling.predict import OnnxSentimentPredictor
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:  # pragma: no cover
     logger.info("Starting up FastAPI application...")
     logger.info(f"Loading model checkpoint from {model_path} on device '{settings.training.device}'...")
     
-    app.state.predictor = SentimentPredictor.from_checkpoint(
+    app.state.predictor = OnnxSentimentPredictor.from_checkpoint(
         model_path, settings.training.device
     )
     
@@ -69,14 +69,14 @@ Instrumentator(
 ).instrument(app).expose(app, endpoint="/metrics")
 
 
-def get_predictor(request: Request) -> SentimentPredictor:
+def get_predictor(request: Request) -> OnnxSentimentPredictor:
     predictor = getattr(request.app.state, "predictor", None)
     if predictor is None:
         raise HTTPException(status_code=503, detail="Model not loaded")
     return predictor
 
 
-def predict_texts(predictor: SentimentPredictor, texts: Sequence[str]) -> list[Prediction]:
+def predict_texts(predictor: OnnxSentimentPredictor, texts: Sequence[str]) -> list[Prediction]:
     probs = predictor.predict_proba(texts)
     return [
         Prediction(
