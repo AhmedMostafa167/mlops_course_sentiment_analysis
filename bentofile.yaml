@@ -4,6 +4,8 @@ include:
   - "src/**/*.py"
   - "config/**/*.yaml"
   - "models/**/*"
+  - "pyproject.toml"
+  - "README.md"
 python:
   lock_packages: false
   requirements_txt: "./requirements.txt"
