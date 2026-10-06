@@ -7,12 +7,15 @@ from collections.abc import AsyncGenerator, Sequence
 from contextlib import asynccontextmanager
 from typing import Annotated
 
+import logging
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field, StringConstraints
 
 from mlops_practitioner_course.config import Settings
 from mlops_practitioner_course.modeling.checkpoint import CHECKPOINT_FILENAME
 from mlops_practitioner_course.modeling.predict import SentimentPredictor
+
+logger = logging.getLogger(__name__)
 
 MAX_BATCH_SIZE = 64
 
@@ -39,9 +42,16 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:  # pragma: no cover
     # Load the model once at startup, not on every request.
     settings = Settings.from_yaml()
     app.state.settings = settings
+    
+    model_path = settings.run_dir / CHECKPOINT_FILENAME
+    logger.info("Starting up FastAPI application...")
+    logger.info(f"Loading model checkpoint from {model_path} on device '{settings.training.device}'...")
+    
     app.state.predictor = SentimentPredictor.from_checkpoint(
-        settings.run_dir / CHECKPOINT_FILENAME, settings.training.device
+        model_path, settings.training.device
     )
+    
+    logger.info("Model loaded successfully. Ready to serve requests!")
     yield
 
 
