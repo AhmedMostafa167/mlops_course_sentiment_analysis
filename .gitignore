@@ -29,3 +29,6 @@ requirements.txt
 .coverage.*
 htmlcov/
 coverage.xml
+
+# Secrets
+.env
