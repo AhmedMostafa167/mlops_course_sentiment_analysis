@@ -11,3 +11,6 @@ python:
   requirements_txt: "./requirements.txt"
   extra_index_url:
     - "https://download.pytorch.org/whl/cpu"
+docker:
+  env:
+    UV_INDEX_STRATEGY: "unsafe-best-match"
