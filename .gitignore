@@ -6,10 +6,31 @@ dist/
 wheels/
 *.egg-info
 
+.venv/
+data/
+mlruns/
+mlflow.db
+.trash/
+models/**/*.pt
+models/**/*.pth
+__pycache__/
+*.pyc
+
 # Virtual environments
 .venv
 /data
+
+# Custom logs and temps
 .agent/
 *.log
 *.pid
 requirements.txt
+
+# Test coverage
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Secrets
+.env

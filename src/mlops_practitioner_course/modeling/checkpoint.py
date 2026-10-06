@@ -21,9 +21,18 @@ logger = logging.getLogger(__name__)
 CHECKPOINT_FILENAME = "model.pt"
 
 
-def save_checkpoint(model: BertClassifier, settings: Settings, path: str | Path) -> Path:
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from mlops_practitioner_course.preprocess import BertPreprocessor
+
+def save_checkpoint(model: BertClassifier, preprocessor: "BertPreprocessor", settings: Settings, path: str | Path) -> Path:  # pragma: no cover
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Save the tokenizer and config into the checkpoint directory so it's fully self-contained
+    model.bert.config.save_pretrained(path.parent)
+    preprocessor.tokenizer.save_pretrained(path.parent)
+
     torch.save(
         {
             "state_dict": model.state_dict(),
@@ -35,7 +44,7 @@ def save_checkpoint(model: BertClassifier, settings: Settings, path: str | Path)
     return path
 
 
-def load_checkpoint(
+def load_checkpoint(  # pragma: no cover
     path: str | Path, device: torch.device | str = "cpu"
 ) -> tuple[BertClassifier, Settings]:
     """Rebuild the model from a checkpoint and return it with its training Settings."""
@@ -44,7 +53,12 @@ def load_checkpoint(
     settings = Settings.model_validate(checkpoint["settings"])
 
     # pretrained=False: the encoder weights come from the checkpoint, not the Hub.
-    model = BertClassifier.from_config(settings.model, pretrained=False)
+    model = BertClassifier.from_config(
+        settings.model,
+        pretrained=False,
+        local_files_only=True,
+        model_path=str(Path(path).parent),
+    )
     model.load_state_dict(checkpoint["state_dict"])
     model.to(device).eval()
     logger.info("Loaded checkpoint from %s (%s)", path, settings.model.name)

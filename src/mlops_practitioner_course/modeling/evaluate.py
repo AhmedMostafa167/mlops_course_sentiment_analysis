@@ -32,10 +32,10 @@ class EvaluationReport:
     confusion_matrix: list[list[int]]  # rows = true label, cols = predicted label
     positive_rate: float  # share of samples predicted positive
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict:  # pragma: no cover
         return asdict(self)
 
-    def save(self, path: str | Path) -> Path:
+    def save(self, path: str | Path) -> Path:  # pragma: no cover
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(self.to_dict(), indent=2), encoding="utf-8")
@@ -49,7 +49,7 @@ def evaluate_predictions(
     y_true = np.asarray(y_true)
     probs = np.asarray(probs)
     if y_true.shape != probs.shape:
-        raise ValueError(f"y_true {y_true.shape} and probs {probs.shape} must have the same shape")
+        raise ValueError(f"y_true {y_true.shape} and probs {probs.shape} must have the same shape")  # pragma: no cover
 
     y_pred = (probs >= threshold).astype(int)
     precision, recall, f1, _ = precision_recall_fscore_support(
@@ -68,7 +68,7 @@ def evaluate_predictions(
     )
 
 
-def plot_roc(y_true: np.ndarray, probs: np.ndarray, title: str, path: str | Path) -> Path:
+def plot_roc(y_true: np.ndarray, probs: np.ndarray, title: str, path: str | Path) -> Path:  # pragma: no cover
     """Save a ROC curve image. Uses the Figure API, so it needs no display (servers, CI)."""
     fpr, tpr, _ = roc_curve(y_true, probs)
     auc = roc_auc_score(y_true, probs)

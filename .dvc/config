@@ -1,4 +1,5 @@
 [core]
-    remote = storage
-['remote "storage"']
-    url = C:\Users\Loqi2\OneDrive\Documents\dvc-store
+    remote = s3-storage
+['remote "s3-storage"']
+    url = s3://sentiment-analysis-amr-data/dvc-storage
+    region = eu-north-1

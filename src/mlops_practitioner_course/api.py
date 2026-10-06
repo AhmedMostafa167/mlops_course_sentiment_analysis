@@ -3,6 +3,7 @@
     uv run uvicorn mlops_practitioner_course.api:app --reload
 """
 
+import logging
 from collections.abc import AsyncGenerator, Sequence
 from contextlib import asynccontextmanager
 from typing import Annotated
@@ -12,7 +13,10 @@ from fastapi import FastAPI, HTTPException, Request, Depends
 from pydantic import BaseModel, Field, StringConstraints
 
 from mlops_practitioner_course.config import Settings
-from mlops_practitioner_course.modeling.predict import SentimentPredictor
+from mlops_practitioner_course.modeling.checkpoint import CHECKPOINT_FILENAME
+from mlops_practitioner_course.modeling.predict import OnnxSentimentPredictor
+
+logger = logging.getLogger(__name__)
 
 MAX_BATCH_SIZE = 64
 
@@ -36,10 +40,19 @@ class Prediction(BaseModel):
 
 app = FastAPI(title="Arabic tweet sentiment API")
 
-
 def get_model_service(service=Depends(bentoml.get_current_service)):
     return service.model_service
 
+# --- Prometheus metrics ---
+from prometheus_fastapi_instrumentator import Instrumentator
+
+Instrumentator(
+    should_group_status_codes=True,
+    should_ignore_untemplated=True,
+    should_instrument_requests_inprogress=True,
+    inprogress_labels=True,
+    excluded_handlers=["/health", "/metrics"],
+).instrument(app).expose(app, endpoint="/metrics")
 
 async def predict_texts(model_service, texts: Sequence[str]) -> list[Prediction]:
     # Call the BentoML API asynchronously
