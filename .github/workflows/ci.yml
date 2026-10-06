@@ -1,0 +1,30 @@
+# The name shown in the GitHub "Actions" tab.
+name: CI
+
+# WHEN should this run? On every push, and on every pull request into main.
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+# WHAT should it do? A workflow is made of one or more "jobs".
+jobs:
+  test:
+    # A fresh Linux machine that GitHub gives us for free, deleted afterwards.
+    runs-on: ubuntu-latest
+
+    # The steps run in order. If one fails, the job stops and shows a red X.
+    steps:
+      # 1. Download your repo's code onto the machine.
+      - uses: actions/checkout@v4
+
+      # 2. Install uv (the same tool you use locally).
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true # reuse downloaded packages between runs (faster)
+
+      # 3. Install Python + all dependencies exactly as pinned in uv.lock.
+      - run: uv sync --locked
+
+      # 4. Run the tests (coverage settings come from pyproject.toml).
+      - run: uv run pytest
