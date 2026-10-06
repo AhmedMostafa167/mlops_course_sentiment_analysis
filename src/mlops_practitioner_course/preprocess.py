@@ -53,28 +53,36 @@ class BertPreprocessor:
         batch_size: int = 16,
         seed: int = 2020,
         cleaner: TweetCleaner | None = None,
+        local_files_only: bool = False,
+        model_path: str | None = None,
     ) -> None:
-        if version not in MODEL_NAMES:
-            raise ValueError(f"Unknown version {version!r}, expected one of {list(MODEL_NAMES)}")
+        if model_path:
+            self.model_name = model_path
+        else:
+            if version not in MODEL_NAMES:
+                raise ValueError(f"Unknown version {version!r}, expected one of {list(MODEL_NAMES)}")
+            self.model_name = MODEL_NAMES[version]
+
         # no cover: start (downloads the tokenizer from the Hugging Face Hub)
-        self.model_name = MODEL_NAMES[version]
         self.max_length = max_length
         self.batch_size = batch_size
         self.seed = seed
         self.cleaner = cleaner or TweetCleaner()
         # Load once; loading per sentence is the main cost of the notebook version.
         logger.info("Loading tokenizer %s (max_length=%d)", self.model_name, max_length)
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name, local_files_only=local_files_only)
         # no cover: stop
 
     @classmethod
-    def from_settings(cls, settings: Settings) -> BertPreprocessor:  # pragma: no cover
+    def from_settings(cls, settings: Settings, local_files_only: bool = False, model_path: str | None = None) -> BertPreprocessor:  # pragma: no cover
         return cls(
             version=settings.model.version,
             max_length=settings.model.max_length,
             batch_size=settings.training.batch_size,
             seed=settings.seed,
             cleaner=TweetCleaner(remove_emojis=settings.preprocessing.remove_emojis),
+            local_files_only=local_files_only,
+            model_path=model_path,
         )
 
     def encode(self, texts: Sequence[str]) -> tuple[torch.Tensor, torch.Tensor]:  # pragma: no cover
