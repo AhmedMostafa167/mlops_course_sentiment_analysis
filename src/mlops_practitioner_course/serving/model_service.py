@@ -2,13 +2,13 @@ import bentoml
 import numpy as np
 from mlops_practitioner_course.config import Settings
 from mlops_practitioner_course.modeling.checkpoint import CHECKPOINT_FILENAME
-from mlops_practitioner_course.modeling.predict import SentimentPredictor
+from mlops_practitioner_course.modeling.predict import OnnxSentimentPredictor
 
 @bentoml.service(resources={"cpu": "2"}, traffic={"timeout": 60})
 class ModelService:
     def __init__(self) -> None:
         self.settings = Settings.from_yaml()
-        self.model = SentimentPredictor.from_checkpoint(
+        self.model = OnnxSentimentPredictor.from_checkpoint(
             self.settings.run_dir / CHECKPOINT_FILENAME, self.settings.training.device
         )
 
