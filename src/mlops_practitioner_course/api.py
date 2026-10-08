@@ -13,8 +13,6 @@ from fastapi import FastAPI, HTTPException, Request, Depends
 from pydantic import BaseModel, Field, StringConstraints
 
 from mlops_practitioner_course.config import Settings
-from mlops_practitioner_course.modeling.checkpoint import CHECKPOINT_FILENAME
-from mlops_practitioner_course.modeling.predict import OnnxSentimentPredictor
 
 logger = logging.getLogger(__name__)
 

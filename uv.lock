@@ -3035,8 +3035,6 @@ dependencies = [
     { name = "prometheus-fastapi-instrumentator" },
     { name = "pydantic" },
     { name = "pyyaml" },
-    { name = "torch", version = "2.14.1", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'darwin'" },
-    { name = "torch", version = "2.14.1+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform != 'darwin'" },
     { name = "transformers" },
 ]
 
@@ -3050,6 +3048,8 @@ train = [
     { name = "onnxscript" },
     { name = "s3fs" },
     { name = "scikit-learn" },
+    { name = "torch", version = "2.14.1", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'darwin'" },
+    { name = "torch", version = "2.14.1+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform != 'darwin'" },
     { name = "tqdm" },
 ]
 
@@ -3082,7 +3082,7 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "s3fs", marker = "extra == 'train'", specifier = ">=2024.6.0" },
     { name = "scikit-learn", marker = "extra == 'train'", specifier = ">=1.9.1" },
-    { name = "torch", specifier = ">=2.14.1", index = "https://download.pytorch.org/whl/cpu" },
+    { name = "torch", marker = "extra == 'train'", specifier = ">=2.14.1", index = "https://download.pytorch.org/whl/cpu" },
     { name = "tqdm", marker = "extra == 'train'", specifier = ">=4.70.1" },
     { name = "transformers", specifier = ">=5.18.0" },
 ]

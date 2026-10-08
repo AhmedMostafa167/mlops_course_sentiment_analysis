@@ -7,9 +7,8 @@ import re
 import unicodedata
 from collections.abc import Sequence
 
+import numpy as np
 import emoji
-import torch
-from torch.utils.data import DataLoader, TensorDataset
 from transformers import AutoTokenizer
 
 from mlops_practitioner_course.config import MODEL_NAMES, Settings
@@ -85,8 +84,8 @@ class BertPreprocessor:
             model_path=model_path,
         )
 
-    def encode(self, texts: Sequence[str]) -> tuple[torch.Tensor, torch.Tensor]:  # pragma: no cover
-        """Return (input_ids, attention_mask) tensors of shape (n_texts, max_length)."""
+    def encode(self, texts: Sequence[str]) -> tuple[np.ndarray, np.ndarray]:  # pragma: no cover
+        """Return (input_ids, attention_mask) arrays of shape (n_texts, max_length)."""
         encoded = self.tokenizer(
             [self.cleaner(t) for t in texts],
             add_special_tokens=True,
@@ -94,7 +93,7 @@ class BertPreprocessor:
             padding="max_length",
             truncation=True,
             return_attention_mask=True,
-            return_tensors="pt",
+            return_tensors="np",
         )
         return encoded["input_ids"], encoded["attention_mask"]
 
@@ -103,18 +102,24 @@ class BertPreprocessor:
         texts: Sequence[str],
         labels: Sequence[int] | None = None,
         shuffle: bool = False,
-    ) -> DataLoader:
+    ):
         """Tokenize texts and wrap them in a DataLoader (shuffle=True for training).
 
         Batches are (input_ids, attention_mask, labels), or just the first two
         when `labels` is None (inference on unlabelled text).
         """
+        import torch
+        from torch.utils.data import DataLoader, TensorDataset
+
         input_ids, attention_mask = self.encode(texts)
-        tensors = [input_ids, attention_mask]
+        input_ids_pt = torch.from_numpy(input_ids)
+        attention_mask_pt = torch.from_numpy(attention_mask)
+
+        tensors = [input_ids_pt, attention_mask_pt]
         if labels is not None:
             tensors.append(torch.tensor(labels))
         dataset = TensorDataset(*tensors)
-        truncated = int((attention_mask.sum(dim=1) == self.max_length).sum())
+        truncated = int((attention_mask_pt.sum(dim=1) == self.max_length).sum())
         logger.info(
             "Encoded %d texts, %d (%.1f%%) hit max_length=%d",
             len(texts), truncated, 100 * truncated / max(len(texts), 1), self.max_length,
