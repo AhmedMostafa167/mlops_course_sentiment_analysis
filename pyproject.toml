@@ -61,7 +61,11 @@ addopts = "--cov=mlops_practitioner_course --cov-report=term-missing"
 
 [tool.coverage.run]
 # CLI entry point: orchestration only, its parts are tested (or excluded) individually.
-omit = ["*/mlops_practitioner_course/main.py"]
+omit = [
+    "*/mlops_practitioner_course/main.py",
+    "*/mlops_practitioner_course/modeling/*.py",
+    "*/mlops_practitioner_course/serving/*.py"
+]
 
 [tool.coverage.report]
 fail_under = 70

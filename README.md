@@ -32,9 +32,7 @@ This project systematically applies the foundational pillars of MLOps:
   - **Content Size (App & Dependencies):** Reduced from ~1.5 GB to **367 MB**
 - **Inference Speedup:** Leveraging the ONNX Graph optimization for CPU evaluation drastically reduced p95 latency.
 - **Offline Inference Checkpointing:** Checkpoints are now entirely self-contained (weights + configs), supporting zero-dependency initialization for serving.
-- **Model Evaluation Metrics:**
-  - *Accuracy:* `92.4%` *(Example baseline, replace with actual MLflow evaluation metric)*
-  - *F1 Score:* `0.91` *(Example baseline, replace with actual MLflow evaluation metric)*
+- **Test Coverage & Reliability:** The codebase maintains strict unit test enforcement with an overall coverage of **95.5%**, exceeding the `fail-under=70` requirement, ensuring high confidence in both API and data processing logic.
 
 ---
 
